@@ -1,0 +1,14 @@
+package com.ecommerce.common.enums;
+
+public enum ErrorCode {
+
+    RESOURCE_NOT_FOUND,
+    DUPLICATE_RESOURCE,
+    VALIDATION_FAILED,
+    INVALID_REQUEST,
+    BUSINESS_RULE_VIOLATION,
+    UNAUTHORIZED,
+    ACCESS_DENIED,
+    INTERNAL_SERVER_ERROR,
+    SERVICE_UNAVAILABLE
+}
