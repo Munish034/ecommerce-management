@@ -1,19 +1,12 @@
 package com.ecommerce.orderservice.enums;
 
-public enum   OrderStatus {
-
+public enum OrderStatus {
 
     CREATED,
+    CONFIRMED,
+    PACKED,
+    SHIPPED,
+    DELIVERED,
+    CANCELLED
 
-    INVENTORY_RESERVED,
-
-    PAYMENT_PENDING,
-
-    PAYMENT_COMPLETED,
-
-    COMPLETED,
-
-    CANCELLED,
-
-    FAILED
 }
