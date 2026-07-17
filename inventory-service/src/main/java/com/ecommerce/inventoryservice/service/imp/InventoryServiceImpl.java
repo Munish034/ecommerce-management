@@ -2,14 +2,18 @@ package com.ecommerce.inventoryservice.service.imp;
 
 
 
+import com.ecommerce.common.enums.ErrorCode;
+import com.ecommerce.common.exception.BusinessException;
 import com.ecommerce.common.exception.DuplicateResourceException;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.inventoryservice.dto.request.CreateProductRequest;
+import com.ecommerce.inventoryservice.dto.request.ReserveStockRequest;
 import com.ecommerce.inventoryservice.dto.response.ProductResponse;
 import com.ecommerce.inventoryservice.entity.Product;
 import com.ecommerce.inventoryservice.mapper.ProductMapper;
 import com.ecommerce.inventoryservice.repository.ProductRepository;
 import com.ecommerce.inventoryservice.service.InventoryService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +51,7 @@ public class InventoryServiceImpl implements InventoryService {
         Product product = repository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Product not found with id : " + id));
+                                "Product not found with id : " + id, ErrorCode.PRODUCT_NOT_FOUND));
 
         return mapper.toResponse(product);
 
@@ -60,6 +64,38 @@ public class InventoryServiceImpl implements InventoryService {
                 .stream()
                 .map(mapper::toResponse)
                 .toList();
+
+    }
+    @Override
+    @Transactional
+    public ProductResponse reserveStock(ReserveStockRequest request) {
+
+        Product product = repository.findById(request.getProductId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+
+                                "Product not found : " + request.getProductId(), ErrorCode.PRODUCT_NOT_FOUND));
+
+        if (!product.getActive()) {
+
+            throw new BusinessException(
+
+                    "Product is inactive.",ErrorCode.PRODUCT_NOT_ACTIVE);
+        }
+
+        if (product.getAvailableQuantity() < request.getQuantity()) {
+
+            throw new BusinessException(
+
+                    "Insufficient stock for product : " + product.getName(),ErrorCode.INSUFFICIENT_STOCK);
+        }
+
+        product.setAvailableQuantity(
+                product.getAvailableQuantity() - request.getQuantity());
+
+        Product updatedProduct = repository.save(product);
+
+        return mapper.toResponse(updatedProduct);
 
     }
 

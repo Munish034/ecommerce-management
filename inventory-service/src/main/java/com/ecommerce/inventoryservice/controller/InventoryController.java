@@ -3,6 +3,7 @@ package com.ecommerce.inventoryservice.controller;
 
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.inventoryservice.dto.request.CreateProductRequest;
+import com.ecommerce.inventoryservice.dto.request.ReserveStockRequest;
 import com.ecommerce.inventoryservice.dto.response.ProductResponse;
 import com.ecommerce.inventoryservice.service.InventoryService;
 import jakarta.validation.Valid;
@@ -52,6 +53,17 @@ public class InventoryController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Products Retrieved Successfully",
+                        response));
+    }
+    @PostMapping("/reserve")
+    public ResponseEntity<ApiResponse<ProductResponse>> reserveStock(
+            @Valid @RequestBody ReserveStockRequest request) {
+
+        ProductResponse response = inventoryService.reserveStock(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Stock Reserved Successfully",
                         response));
     }
 

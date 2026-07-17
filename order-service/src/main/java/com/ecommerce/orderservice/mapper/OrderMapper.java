@@ -2,10 +2,10 @@ package com.ecommerce.orderservice.mapper;
 
 
 
-import com.ecommerce.orderservice.dto.CreateOrderRequest;
-import com.ecommerce.orderservice.dto.OrderItemRequest;
-import com.ecommerce.orderservice.dto.OrderItemResponse;
-import com.ecommerce.orderservice.dto.OrderResponse;
+import com.ecommerce.orderservice.dto.request.CreateOrderRequest;
+import com.ecommerce.orderservice.dto.request.OrderItemRequest;
+import com.ecommerce.orderservice.dto.response.OrderItemResponse;
+import com.ecommerce.orderservice.dto.response.OrderResponse;
 import com.ecommerce.orderservice.entity.Order;
 import com.ecommerce.orderservice.entity.OrderItem;
 import org.springframework.stereotype.Component;

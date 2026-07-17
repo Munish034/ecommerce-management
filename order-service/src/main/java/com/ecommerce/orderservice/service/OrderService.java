@@ -2,8 +2,8 @@ package com.ecommerce.orderservice.service;
 
 
 
-import com.ecommerce.orderservice.dto.CreateOrderRequest;
-import com.ecommerce.orderservice.dto.OrderResponse;
+import com.ecommerce.orderservice.dto.request.CreateOrderRequest;
+import com.ecommerce.orderservice.dto.response.OrderResponse;
 
 public interface OrderService {
 

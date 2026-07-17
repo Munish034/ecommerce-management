@@ -2,8 +2,8 @@ package com.ecommerce.orderservice.controller;
 
 
 import com.ecommerce.common.response.ApiResponse;
-import com.ecommerce.orderservice.dto.CreateOrderRequest;
-import com.ecommerce.orderservice.dto.OrderResponse;
+import com.ecommerce.orderservice.dto.request.CreateOrderRequest;
+import com.ecommerce.orderservice.dto.response.OrderResponse;
 import com.ecommerce.orderservice.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.ecommerce.orderservice.dto;
+package com.ecommerce.orderservice.dto.response;
 
 import lombok.*;
 
