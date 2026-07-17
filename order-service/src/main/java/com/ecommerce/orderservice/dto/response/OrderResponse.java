@@ -2,8 +2,8 @@ package com.ecommerce.orderservice.dto.response;
 
 
 
+import com.ecommerce.common.enums.PaymentMethod;
 import com.ecommerce.orderservice.enums.OrderStatus;
-import com.ecommerce.orderservice.enums.PaymentMethod;
 import com.ecommerce.orderservice.enums.PaymentStatus;
 import lombok.*;
 

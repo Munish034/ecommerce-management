@@ -2,7 +2,7 @@ package com.ecommerce.orderservice.dto.request;
 
 
 
-import com.ecommerce.orderservice.enums.PaymentMethod;
+import com.ecommerce.common.enums.PaymentMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

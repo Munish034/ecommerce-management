@@ -14,13 +14,14 @@ import com.ecommerce.orderservice.dto.response.OrderResponse;
 import com.ecommerce.orderservice.entity.Order;
 import com.ecommerce.orderservice.entity.OrderItem;
 import com.ecommerce.orderservice.enums.OrderStatus;
-import com.ecommerce.orderservice.enums.PaymentStatus;
+import com.ecommerce.common.enums.PaymentMethod;
 import com.ecommerce.orderservice.mapper.OrderMapper;
 import com.ecommerce.orderservice.repository.OrderRepository;
 import com.ecommerce.orderservice.service.OrderService;
 import com.ecommerce.orderservice.service.PricingService;
 import com.ecommerce.orderservice.util.OrderNumberGenerator;
 import com.ecommerce.orderservice.client.InventoryClient;
+import com.ecommerce.orderservice.enums.PaymentStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final PricingService pricingService;
     private final PaymentClient paymentClient;
+    private final PaymentMethod paymentMethod;
 
     private final OrderNumberGenerator generator;
     private final InventoryClient inventoryClient;
@@ -102,7 +104,13 @@ public class OrderServiceImpl implements OrderService {
                                 .build()
 
                 );
+        if (paymentResponse.getData().getPaymentStatus()
+                != PaymentStatus.SUCCESS) {
 
+            throw new BusinessException(
+
+                    "Payment Failed.",ErrorCode.PAYMENT_FAILED);
+        }
 
         Order savedOrder = repository.save(order);
 

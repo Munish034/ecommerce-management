@@ -16,4 +16,5 @@ public enum ErrorCode {
     PRODUCT_NOT_ACTIVE,
     PAYMENT_ALREADY_EXISTS,
     PAYMENT_NOT_FOUND,
+    PAYMENT_FAILED,
 }
