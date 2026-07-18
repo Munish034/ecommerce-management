@@ -38,7 +38,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final PricingService pricingService;
     private final PaymentClient paymentClient;
-    private final PaymentMethod paymentMethod;
+
 
     private final OrderNumberGenerator generator;
     private final InventoryClient inventoryClient;

@@ -26,8 +26,10 @@
         <module>common-library</module>
         <module>discovery-server</module>
         <module>order-service</module>
+
         <module>inventory-service</module>
         <module>payment-service</module>
+
     </modules>
 
     <properties>
