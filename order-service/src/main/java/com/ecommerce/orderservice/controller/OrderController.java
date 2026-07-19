@@ -18,6 +18,13 @@ public class OrderController {
 
     private final OrderService orderService;
 
+
+@GetMapping("test")
+public String test(){
+
+    return "test";
+}
+
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
             @Valid @RequestBody CreateOrderRequest request) {
