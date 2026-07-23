@@ -7,6 +7,7 @@ import com.ecommerce.common.exception.BusinessException;
 import com.ecommerce.common.exception.DuplicateResourceException;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.inventoryservice.dto.request.CreateProductRequest;
+import com.ecommerce.inventoryservice.dto.request.ReleaseStockRequest;
 import com.ecommerce.inventoryservice.dto.request.ReserveStockRequest;
 import com.ecommerce.inventoryservice.dto.response.ProductResponse;
 import com.ecommerce.inventoryservice.entity.Product;
@@ -97,6 +98,21 @@ public class InventoryServiceImpl implements InventoryService {
 
         return mapper.toResponse(updatedProduct);
 
+    }
+
+    @Override
+    public ProductResponse releaseStock(ReleaseStockRequest request) {
+        Product product = repository.findById(request.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Product not found : " + request.getProductId(),
+                        ErrorCode.PRODUCT_NOT_FOUND));
+
+        product.setAvailableQuantity(
+                product.getAvailableQuantity() + request.getQuantity());
+
+        Product savedProduct = repository.save(product);
+
+        return mapper.toResponse(savedProduct);
     }
 
 }

@@ -3,6 +3,7 @@ package com.ecommerce.inventoryservice.controller;
 
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.inventoryservice.dto.request.CreateProductRequest;
+import com.ecommerce.inventoryservice.dto.request.ReleaseStockRequest;
 import com.ecommerce.inventoryservice.dto.request.ReserveStockRequest;
 import com.ecommerce.inventoryservice.dto.response.ProductResponse;
 import com.ecommerce.inventoryservice.service.InventoryService;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
 public class InventoryController {
 
@@ -65,6 +66,19 @@ public class InventoryController {
                 ApiResponse.success(
                         "Stock Reserved Successfully",
                         response));
+    }
+    @PostMapping("/release")
+    public ResponseEntity<ApiResponse<ProductResponse>> releaseStock(
+            @Valid @RequestBody ReleaseStockRequest request) {
+
+        ProductResponse response = inventoryService.releaseStock(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Stock Released Successfully",
+                        response
+                )
+        );
     }
 
 }

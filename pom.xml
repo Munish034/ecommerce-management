@@ -26,11 +26,11 @@
         <module>common-library</module>
         <module>discovery-server</module>
         <module>order-service</module>
-<<<<<<< HEAD
 
-=======
+
+
         <module>api-gateway</module>
->>>>>>> 3aab877 (full setup)
+        <module>notification-service</module>
         <module>inventory-service</module>
         <module>payment-service</module>
 

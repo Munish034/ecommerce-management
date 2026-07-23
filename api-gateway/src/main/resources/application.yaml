@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8086
 spring:
   main:
     web-application-type: reactive
@@ -19,7 +19,11 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://localhost:8761/eureka/
+
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
 
 management:
   endpoints:

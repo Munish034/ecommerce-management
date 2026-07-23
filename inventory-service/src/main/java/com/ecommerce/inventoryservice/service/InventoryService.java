@@ -3,6 +3,7 @@ package com.ecommerce.inventoryservice.service;
 
 
 import com.ecommerce.inventoryservice.dto.request.CreateProductRequest;
+import com.ecommerce.inventoryservice.dto.request.ReleaseStockRequest;
 import com.ecommerce.inventoryservice.dto.request.ReserveStockRequest;
 import com.ecommerce.inventoryservice.dto.response.ProductResponse;
 
@@ -17,5 +18,6 @@ public interface InventoryService {
     List<ProductResponse> getAllProducts();
 
     ProductResponse reserveStock(ReserveStockRequest request);
+    ProductResponse releaseStock(ReleaseStockRequest request);
 
 }
