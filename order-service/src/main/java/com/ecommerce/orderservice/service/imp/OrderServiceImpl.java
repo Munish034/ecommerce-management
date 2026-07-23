@@ -6,6 +6,7 @@ import com.ecommerce.common.events.OrderCreatedEvent;
 import com.ecommerce.common.exception.BusinessException;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.common.response.ApiResponse;
+import com.ecommerce.orderservice.client.InventoryGateway;
 import com.ecommerce.orderservice.client.PaymentClient;
 import com.ecommerce.orderservice.dto.client.PaymentRequest;
 import com.ecommerce.orderservice.dto.client.PaymentResponse;
@@ -28,8 +29,10 @@ import com.ecommerce.orderservice.specification.OrderSpecification;
 import com.ecommerce.orderservice.util.OrderNumberGenerator;
 import com.ecommerce.orderservice.client.InventoryClient;
 import com.ecommerce.orderservice.enums.PaymentStatus;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,9 +45,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository repository;
@@ -57,6 +63,9 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderNumberGenerator generator;
     private final InventoryClient inventoryClient;
+    private final InventoryGateway inventoryGateway;
+
+
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
             "id",
             "orderNumber",
@@ -121,10 +130,10 @@ public class OrderServiceImpl implements OrderService {
 
         for (OrderItem item : order.getOrderItems()) {
 
-            ApiResponse<InventoryProductResponse> apiResponse =
-                    inventoryClient.getProduct(item.getProductId());
+            InventoryProductResponse product =
+                    inventoryGateway.getProduct(item.getProductId());
 
-            InventoryProductResponse product = apiResponse.getData();
+
 
             if (product == null) {
 
@@ -133,7 +142,7 @@ public class OrderServiceImpl implements OrderService {
                         ErrorCode.PRODUCT_NOT_FOUND);
             }
 
-            inventoryClient.reserveStock(
+            inventoryGateway.reserveStock(
                     ReserveStockRequest.builder()
                             .productId(item.getProductId())
                             .quantity(item.getQuantity())
@@ -193,6 +202,8 @@ public class OrderServiceImpl implements OrderService {
             }
         }
     }
+
+
 
     ///cancel order////
     @Override
