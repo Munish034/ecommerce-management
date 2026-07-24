@@ -10,6 +10,7 @@ import com.ecommerce.orderservice.entity.Order;
 import com.ecommerce.orderservice.entity.OrderItem;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +35,9 @@ public class OrderMapper {
 
             item.setProductId(itemRequest.getProductId());
             item.setQuantity(itemRequest.getQuantity());
-
+            item.setProductName("DUMMY_PRODUCT");
+            item.setUnitPrice(BigDecimal.ZERO);
+            item.setTotalPrice(BigDecimal.ZERO);
             // Maintain bi-directional relationship
             item.setOrder(order);
 

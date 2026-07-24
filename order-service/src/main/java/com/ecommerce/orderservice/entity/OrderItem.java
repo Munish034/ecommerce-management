@@ -21,16 +21,16 @@ public class OrderItem {
     @Column(name = "product_id", nullable = false)
     private Long productId;
 
-    @Column(name = "product_name", nullable = false)
+    @Column(name = "product_name")
     private String productName;
 
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(name = "unit_price", precision = 12, scale = 2)
+    @Column(name = "unit_price")
     private BigDecimal unitPrice;
 
-    @Column(name = "total_price", precision = 12, scale = 2)
+    @Column(name = "total_price")
     private BigDecimal totalPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)

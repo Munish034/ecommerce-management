@@ -1,12 +1,14 @@
 package com.ecommerce.paymentservice.service.impl;
 
 import com.ecommerce.common.enums.ErrorCode;
+import com.ecommerce.common.events.PaymentFailedEvent;
 import com.ecommerce.common.exception.BusinessException;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.paymentservice.dto.request.CreatePaymentRequest;
 import com.ecommerce.paymentservice.dto.response.PaymentResponse;
 import com.ecommerce.paymentservice.entity.Payment;
 import com.ecommerce.paymentservice.enums.PaymentStatus;
+import com.ecommerce.paymentservice.kafka.PaymentEventProducer;
 import com.ecommerce.paymentservice.mapper.PaymentMapper;
 import com.ecommerce.paymentservice.repository.PaymentRepository;
 import com.ecommerce.paymentservice.service.PaymentService;
@@ -15,6 +17,8 @@ import com.ecommerce.paymentservice.util.TransactionIdGenerator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -28,17 +32,25 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentIdGenerator paymentIdGenerator;
 
     private final TransactionIdGenerator transactionIdGenerator;
+    private final PaymentEventProducer paymentEventProducer;
 
     @Override
     public PaymentResponse processPayment(CreatePaymentRequest request) {
 
-        if(repository.existsByOrderNumber(request.getOrderNumber())){
+        if (request.getAmount().compareTo(BigDecimal.valueOf(100000)) > 0) {
+
+            PaymentFailedEvent event = PaymentFailedEvent.builder()
+                    .orderNumber(request.getOrderNumber())
+
+                    .reason("LIMIT_EXCEEDED")
+                    .build();
+
+            paymentEventProducer.publishPaymentFailedEvent(event);
 
             throw new BusinessException(
-
-                    "Payment already exists for Order : "
-                            + request.getOrderNumber(),ErrorCode.PAYMENT_ALREADY_EXISTS);
-
+                    "Payment failed. Amount exceeds limit.",
+                    ErrorCode.PAYMENT_FAILED
+            );
         }
 
         Payment payment = mapper.toEntity(request);

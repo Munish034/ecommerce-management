@@ -7,11 +7,19 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
+    consumer:
+      group-id: order-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
     producer:
-
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
   datasource:
@@ -27,6 +35,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+
 
 eureka:
   client:
@@ -60,14 +70,12 @@ resilience4j:
         permitted-number-of-calls-in-half-open-state: 3
         automatic-transition-from-open-to-half-open-enabled: true
 
-
   retry:
     instances:
       inventoryService:
-
         max-attempts: 3
-
         wait-duration: 2s
+
   bulkhead:
     instances:
       inventoryService:

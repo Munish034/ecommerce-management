@@ -10,6 +10,8 @@ import org.springframework.data.domain.Page;
 public interface OrderService {
 
     OrderResponse createOrder(CreateOrderRequest request);
+    void cancelOrderByOrderNumber(String orderNumber);
+    OrderResponse cancelOrder(Long orderId, String reason);
     OrderResponse cancelOrder(Long orderId);
     void deleteOrder(Long orderId);
     OrderResponse getOrderById(Long orderId);

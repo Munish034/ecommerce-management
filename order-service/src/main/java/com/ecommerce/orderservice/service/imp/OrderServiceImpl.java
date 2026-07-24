@@ -1,5 +1,6 @@
 package com.ecommerce.orderservice.service.imp;
 
+import com.ecommerce.common.enums.CancellationReason;
 import com.ecommerce.common.enums.ErrorCode;
 import com.ecommerce.common.events.OrderCancelledEvent;
 import com.ecommerce.common.events.OrderCreatedEvent;
@@ -24,6 +25,8 @@ import com.ecommerce.orderservice.kafka.OrderEventProducer;
 import com.ecommerce.orderservice.mapper.OrderMapper;
 import com.ecommerce.orderservice.repository.OrderRepository;
 import com.ecommerce.orderservice.service.OrderService;
+import com.ecommerce.orderservice.service.OrderTransactionService;
+import com.ecommerce.orderservice.service.OutboxService;
 import com.ecommerce.orderservice.service.PricingService;
 import com.ecommerce.orderservice.specification.OrderSpecification;
 import com.ecommerce.orderservice.util.OrderNumberGenerator;
@@ -64,6 +67,10 @@ public class OrderServiceImpl implements OrderService {
     private final OrderNumberGenerator generator;
     private final InventoryClient inventoryClient;
     private final InventoryGateway inventoryGateway;
+    private final OutboxService outboxService;
+    private final OrderTransactionService transactionService;
+
+
 
 
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of(
@@ -76,38 +83,69 @@ public class OrderServiceImpl implements OrderService {
 
      /////create order /////
 
+     @Override
+     @Transactional
+     public OrderResponse createOrder(CreateOrderRequest request) {
+
+         Order order = buildOrder(request);
+
+         // Save the order first so Saga has something to compensate
+         Order savedOrder = transactionService.savePendingOrder(order);
+
+         List<ReleaseStockRequest> reservedItems = new ArrayList<>();
+
+         try {
+
+             reserveInventory(savedOrder, reservedItems);
+
+             pricingService.calculatePrice(savedOrder);
+             // Update status after successful payment
+             savedOrder.setOrderStatus(OrderStatus.CONFIRMED);
+             savedOrder.setPaymentStatus(PaymentStatus.PAID);
+
+             savedOrder = repository.save(savedOrder);
+             processPayment(savedOrder);
+
+transactionService.confirmOrder(savedOrder);
+
+             OrderCreatedEvent event = OrderCreatedEvent.builder()
+                     .orderId(savedOrder.getId())
+                     .orderNumber(savedOrder.getOrderNumber())
+                     .totalAmount(savedOrder.getFinalAmount())
+                     .paymentMethod(savedOrder.getPaymentMethod())
+                     .eventTime(LocalDateTime.now())
+                     .build();
+
+             outboxService.saveEvent(
+                     "ORDER",
+                     savedOrder.getId(),
+                     "ORDER_CREATED",
+                     event
+             );
+
+             return mapper.toResponse(savedOrder);
+
+         } catch (Exception ex) {
+
+             // PaymentFailedEvent will trigger Saga compensation.
+             // Do not release stock here.
+
+             throw ex;
+         }
+     }
     @Override
-    @Transactional
-    public OrderResponse createOrder(CreateOrderRequest request) {
+    public void cancelOrderByOrderNumber(String orderNumber) {
 
-        Order order = buildOrder(request);
-        List<ReleaseStockRequest> reservedItems = new ArrayList<>();
-        try {
+        Order order = repository.findByOrderNumber(orderNumber)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Order not found : " + orderNumber,
+                                ErrorCode.ORDER_NOT_FOUND));
 
-            reserveInventory(order, reservedItems);
-
-            pricingService.calculatePrice(order);
-
-            processPayment(order);
-
-            Order savedOrder = repository.save(order);
-            OrderCreatedEvent event = OrderCreatedEvent.builder()
-                    .orderId(savedOrder.getId())
-                    .orderNumber(savedOrder.getOrderNumber())
-                    .totalAmount(savedOrder.getFinalAmount())
-                    .paymentMethod(savedOrder.getPaymentMethod())
-                    .eventTime(LocalDateTime.now())
-                    .build();
-            orderEventProducer.publishOrderCreated(event);
-
-            return mapper.toResponse(savedOrder);
-
-        } catch (Exception ex) {
-
-            releaseReservedStock(reservedItems);
-
-            throw ex;
-        }
+        cancelOrder(
+                order.getId(),
+                CancellationReason.PAYMENT_FAILED.name()
+        );
     }
 
 
@@ -116,7 +154,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = mapper.toEntity(request);
 
         order.setOrderNumber(generator.generateOrderNumber());
-        order.setOrderStatus(OrderStatus.CREATED);
+        order.setOrderStatus(OrderStatus.PENDING);
         order.setPaymentStatus(PaymentStatus.PENDING);
 
         // IMPORTANT
@@ -208,7 +246,8 @@ public class OrderServiceImpl implements OrderService {
     ///cancel order////
     @Override
     @Transactional
-    public OrderResponse cancelOrder(Long orderId) {
+
+    public OrderResponse cancelOrder(Long orderId, String reason) {
 
         Order order = getOrder(orderId);
 
@@ -219,15 +258,34 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus(OrderStatus.CANCELLED);
 
         Order updatedOrder = repository.save(order);
+
         OrderCancelledEvent event = OrderCancelledEvent.builder()
                 .orderId(updatedOrder.getId())
                 .orderNumber(updatedOrder.getOrderNumber())
-                .reason("CUSTOMER_REQUEST")
+
+                .reason(reason)
                 .eventTime(LocalDateTime.now())
                 .build();
-        orderEventProducer.publishOrderCancelled(event);
+
+        outboxService.saveEvent(
+                "ORDER",
+                updatedOrder.getId(),
+                "ORDER_CANCELLED",
+                event
+        );
+
         return mapper.toResponse(updatedOrder);
     }
+    @Override
+    public OrderResponse cancelOrder(Long orderId) {
+
+        return cancelOrder(
+                orderId,
+                CancellationReason.CUSTOMER_REQUEST.name()
+        );
+
+    }
+
     private Order getOrder(Long orderId) {
 
         return repository.findById(orderId)

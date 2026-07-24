@@ -115,4 +115,9 @@ public class InventoryServiceImpl implements InventoryService {
         return mapper.toResponse(savedProduct);
     }
 
+    @Override
+    public void releaseReservedStock(Long orderId) {
+
+    }
+
 }

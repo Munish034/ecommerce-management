@@ -2,15 +2,12 @@ package com.ecommerce.common.events;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
-@Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderCancelledEvent {
-
-    private Long orderId;
+@Builder
+public class PaymentFailedEvent {
 
     private String orderNumber;
 
@@ -19,6 +16,4 @@ public class OrderCancelledEvent {
     private Integer quantity;
 
     private String reason;
-
-    private LocalDateTime eventTime;
 }
