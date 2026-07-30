@@ -24,5 +24,6 @@ public class CreatePaymentRequest {
 
     @NotNull(message = "Payment Method is required")
     private PaymentMethod paymentMethod;
+    private Long customerId;
 
 }

@@ -1,3 +1,38 @@
+server:
+  port: 8087
+
 spring:
   application:
     name: auth-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/Ecommerce_Authservice?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC
+    username: root
+    password: nic@123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+
+jwt:
+  secret: 9B0E7D5A3C8F1A6E2B4D9C7A5F3E1B8D6C4A2F9E7B5D3A1C8E6F4B2D9A7C5E3F
+  expiration: 86400000
+
+  refresh-expiration-days: 7
+
+logging:
+  level:
+    org.springframework.security: TRACE

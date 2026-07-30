@@ -17,7 +17,7 @@ import java.util.List;
 @Builder
 public class CreateOrderRequest {
 
-    @NotNull(message = "Customer Id is required")
+
     private Long customerId;
 
     @NotNull(message = "Payment Method is required")

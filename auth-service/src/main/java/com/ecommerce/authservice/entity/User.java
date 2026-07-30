@@ -22,7 +22,11 @@ public class User {
 
     @Column(nullable = false, unique = true)
     private String username;
+    @Column(nullable = false, length = 100)
+    private String firstName;
 
+    @Column(nullable = false, length = 100)
+    private String lastName;
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -54,5 +58,9 @@ public class User {
     @PreUpdate
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 }

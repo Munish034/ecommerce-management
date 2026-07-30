@@ -7,6 +7,7 @@ import com.ecommerce.common.events.OrderCreatedEvent;
 import com.ecommerce.common.exception.BusinessException;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.common.response.ApiResponse;
+import com.ecommerce.common.security.util.SecurityUtils;
 import com.ecommerce.orderservice.client.InventoryGateway;
 import com.ecommerce.orderservice.client.PaymentClient;
 import com.ecommerce.orderservice.dto.client.PaymentRequest;
@@ -41,6 +42,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -153,11 +155,12 @@ transactionService.confirmOrder(savedOrder);
 
         Order order = mapper.toEntity(request);
 
+        order.setCustomerId(SecurityUtils.getCurrentUserId());
+
         order.setOrderNumber(generator.generateOrderNumber());
         order.setOrderStatus(OrderStatus.PENDING);
         order.setPaymentStatus(PaymentStatus.PENDING);
 
-        // IMPORTANT
         order.getOrderItems().forEach(item -> item.setOrder(order));
 
         return order;
@@ -250,7 +253,7 @@ transactionService.confirmOrder(savedOrder);
     public OrderResponse cancelOrder(Long orderId, String reason) {
 
         Order order = getOrder(orderId);
-
+        validateOrderOwnership(order);
         validateOrderCancellation(order);
 
         releaseOrderInventory(order);
@@ -335,7 +338,7 @@ transactionService.confirmOrder(savedOrder);
     public void deleteOrder(Long orderId) {
 
         Order order = getOrder(orderId);
-
+        validateOrderOwnership(order);
         validateOrderDeletion(order);
 
         repository.delete(order);
@@ -354,7 +357,7 @@ transactionService.confirmOrder(savedOrder);
     public OrderResponse getOrderById(Long orderId) {
 
         Order order = getOrder(orderId);
-
+        validateOrderOwnership(order);
         return mapper.toResponse(order);
     }
 
@@ -397,6 +400,16 @@ transactionService.confirmOrder(savedOrder);
             throw new BusinessException(
                     "Invalid sort field: " + sortBy,
                     ErrorCode.INVALID_REQUEST);
+        }
+    }
+    private void validateOrderOwnership(Order order) {
+
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        if (!order.getCustomerId().equals(currentUserId)) {
+            throw new AccessDeniedException(
+                    "You are not authorized to access this order."
+            );
         }
     }
 }

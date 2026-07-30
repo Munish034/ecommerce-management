@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,7 +27,7 @@ public String test(){
 
     return "test";
 }
-
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
             @Valid @RequestBody CreateOrderRequest request) {
@@ -38,6 +39,8 @@ public String test(){
                         "Order Created Successfully",
                         response));
     }
+
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/{id}/cancel")
     public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
             @PathVariable Long id) {
@@ -51,6 +54,7 @@ public String test(){
                 ));
 
     }
+    @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteOrder(
             @PathVariable Long id) {
@@ -63,6 +67,7 @@ public String test(){
                         null
                 ));
     }
+    @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(
             @PathVariable Long id) {
@@ -75,6 +80,7 @@ public String test(){
                         response
                 ));
     }
+    @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<OrderResponse>>> searchOrders(
 

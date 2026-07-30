@@ -28,7 +28,7 @@ public class Order {
     @Column(name = "order_number", nullable = false, unique = true, length = 30)
     private String orderNumber;
 
-    @Column(name = "customer_id", nullable = false)
+    @Column(name = "customer_id",nullable = true)
     private Long customerId;
 
     @Enumerated(EnumType.STRING)

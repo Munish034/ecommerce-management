@@ -8,6 +8,7 @@ public enum RoleName {
 
     ROLE_CUSTOMER,
 
-    ROLE_SELLER
+    ROLE_SELLER,
+    ROLE_USER
 
 }

@@ -7,6 +7,7 @@ import com.ecommerce.paymentservice.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
 
     private final PaymentService paymentService;
-
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping
     public ResponseEntity<ApiResponse<PaymentResponse>> processPayment(
             @Valid @RequestBody CreatePaymentRequest request) {
@@ -28,7 +29,7 @@ public class PaymentController {
                         "Payment Processed Successfully",
                         response));
     }
-
+    @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/{paymentId}")
     public ResponseEntity<ApiResponse<PaymentResponse>> getPayment(
             @PathVariable String paymentId) {

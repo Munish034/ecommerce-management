@@ -4,6 +4,7 @@ import com.ecommerce.common.enums.ErrorCode;
 import com.ecommerce.common.events.PaymentFailedEvent;
 import com.ecommerce.common.exception.BusinessException;
 import com.ecommerce.common.exception.ResourceNotFoundException;
+import com.ecommerce.common.security.util.SecurityUtils;
 import com.ecommerce.paymentservice.dto.request.CreatePaymentRequest;
 import com.ecommerce.paymentservice.dto.response.PaymentResponse;
 import com.ecommerce.paymentservice.entity.Payment;
@@ -16,6 +17,7 @@ import com.ecommerce.paymentservice.util.PaymentIdGenerator;
 import com.ecommerce.paymentservice.util.TransactionIdGenerator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -54,7 +56,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         Payment payment = mapper.toEntity(request);
-
+        payment.setCustomerId(request.getCustomerId());
         payment.setPaymentId(
                 paymentIdGenerator.generatePaymentId());
 
@@ -89,9 +91,18 @@ public class PaymentServiceImpl implements PaymentService {
 
                                 "Payment not found : "
                                         + paymentId,  ErrorCode.PAYMENT_NOT_FOUND));
-
+        validatePaymentOwnership(payment);
         return mapper.toResponse(payment);
 
     }
+    private void validatePaymentOwnership(Payment payment) {
 
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+
+        if (!payment.getCustomerId().equals(currentUserId)) {
+            throw new AccessDeniedException(
+                    "You are not authorized to access this payment."
+            );
+        }
+    }
 }

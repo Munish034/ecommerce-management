@@ -48,6 +48,7 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public ProductResponse getProduct(Long id) {
+        System.out.println("===== Inventory service  Hit =====");
 
         Product product = repository.findById(id)
                 .orElseThrow(() ->
