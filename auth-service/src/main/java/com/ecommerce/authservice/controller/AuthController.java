@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+
+    private final AuthService authenticationService;
     @GetMapping("test")
     public String test(){
 
@@ -52,11 +54,14 @@ public class AuthController {
     }
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<LoginResponse>> refreshToken(
-            @Valid @RequestBody RefreshTokenRequest request) {
+            @RequestBody RefreshTokenRequest request) {
+
+        LoginResponse response = authenticationService.refreshToken(request);
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        authService.refreshToken(request)
+                        "Access token refreshed successfully.",
+                        response
                 )
         );
     }

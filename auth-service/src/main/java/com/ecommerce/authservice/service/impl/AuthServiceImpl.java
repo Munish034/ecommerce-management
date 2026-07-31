@@ -13,7 +13,8 @@ import com.ecommerce.authservice.mapper.AuthMapper;
 import com.ecommerce.authservice.repository.RoleRepository;
 import com.ecommerce.authservice.repository.UserRepository;
 import com.ecommerce.authservice.security.CustomUserDetails;
-import com.ecommerce.authservice.security.jwt.JwtService;
+import com.ecommerce.authservice.security.CustomUserDetailsService;
+import com.ecommerce.authservice.security.jwt.JwAuthService;
 import com.ecommerce.authservice.service.AuthService;
 import com.ecommerce.authservice.service.RefreshTokenService;
 import com.ecommerce.common.enums.ErrorCode;
@@ -36,10 +37,11 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final JwAuthService jwtService;
     private final AuthMapper authMapper;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
+    private final CustomUserDetailsService userDetailsService;
     @Override
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
@@ -112,6 +114,7 @@ public class AuthServiceImpl implements AuthService {
         RefreshToken refreshToken =
                 refreshTokenService.verifyRefreshToken(
                         request.getRefreshToken());
+        System.out.println( "refresh token "+request.getRefreshToken());
 
         User user = userRepository.findById(refreshToken.getUserId())
                 .orElseThrow(() ->
@@ -121,8 +124,10 @@ public class AuthServiceImpl implements AuthService {
 
 
         CustomUserDetails userDetails =
-                new CustomUserDetails(user);
+                (CustomUserDetails) userDetailsService
+                        .loadUserByUsername(user.getEmail());
 
+        System.out.println(refreshToken.getUserId()+"====="+(user.getEmail()));
         String accessToken =
                 jwtService.generateToken(userDetails);
 

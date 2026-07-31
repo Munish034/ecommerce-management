@@ -1,9 +1,9 @@
 package com.ecommerce.authservice.config;
 
 import com.ecommerce.authservice.security.CustomUserDetailsService;
-import com.ecommerce.authservice.security.jwt.JwtAuthenticationFilter;
 
 import com.ecommerce.common.security.exception.JwtAuthenticationEntryPoint;
+import com.ecommerce.common.security.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/auth/register",
                                 "/api/v1/auth/login",
+                                "/api/v1/auth/refresh",
                                 "/api/v1/auth/test",
                                 "/error",
                                 "/actuator/**")
