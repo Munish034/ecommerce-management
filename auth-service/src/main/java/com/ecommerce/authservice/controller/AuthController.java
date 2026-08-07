@@ -1,6 +1,7 @@
 package com.ecommerce.authservice.controller;
 
 import com.ecommerce.authservice.dto.request.LoginRequest;
+import com.ecommerce.authservice.dto.request.LogoutRequest;
 import com.ecommerce.authservice.dto.request.RefreshTokenRequest;
 import com.ecommerce.authservice.dto.request.RegisterRequest;
 import com.ecommerce.authservice.dto.response.LoginResponse;
@@ -62,6 +63,19 @@ public class AuthController {
                 ApiResponse.success(
                         "Access token refreshed successfully.",
                         response
+                )
+        );
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @Valid @RequestBody LogoutRequest request) {
+
+        authService.logout(request.getRefreshToken());
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Logout successful.",
+                        null
                 )
         );
     }

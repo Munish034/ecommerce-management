@@ -112,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse refreshToken(RefreshTokenRequest request) {
 
         RefreshToken refreshToken =
-                refreshTokenService.verifyRefreshToken(
+                refreshTokenService.rotateRefreshToken(
                         request.getRefreshToken());
         System.out.println( "refresh token "+request.getRefreshToken());
 
@@ -141,5 +141,11 @@ public class AuthServiceImpl implements AuthService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .build();
+    }
+    @Override
+    public void logout(String refreshToken) {
+
+        refreshTokenService.revokeRefreshToken(refreshToken);
+
     }
 }

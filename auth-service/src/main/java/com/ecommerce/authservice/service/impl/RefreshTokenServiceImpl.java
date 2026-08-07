@@ -64,9 +64,23 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
         return refreshToken;
     }
+    @Override
+    public RefreshToken rotateRefreshToken(String token) {
 
+        RefreshToken oldToken = verifyRefreshToken(token);
+
+        repository.delete(oldToken);
+
+        return createRefreshToken(oldToken.getUserId());
+    }
     @Override
     public void revokeRefreshToken(Long userId) {
         repository.deleteByUserId(userId);
+    }
+    @Override
+    public void revokeRefreshToken(String token) {
+
+        repository.deleteByToken(token);
+
     }
 }
