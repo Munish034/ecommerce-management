@@ -18,4 +18,5 @@ public class PaymentRequest {
 
     private PaymentMethod paymentMethod;
 
+    private Long customerId;
 }

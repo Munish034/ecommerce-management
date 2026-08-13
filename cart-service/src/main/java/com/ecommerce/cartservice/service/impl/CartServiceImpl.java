@@ -4,6 +4,7 @@ import com.ecommerce.cartservice.client.InventoryClient;
 import com.ecommerce.cartservice.dto.request.AddToCartRequest;
 import com.ecommerce.cartservice.dto.request.UpdateCartItemRequest;
 import com.ecommerce.cartservice.dto.response.CartResponse;
+import com.ecommerce.cartservice.dto.response.InventoryProductResponse;
 import com.ecommerce.cartservice.dto.response.ProductResponse;
 import com.ecommerce.cartservice.entity.Cart;
 import com.ecommerce.cartservice.entity.CartItem;
@@ -48,8 +49,6 @@ public class CartServiceImpl implements CartService {
         Cart cart = cartRepository.findByCustomerId(customerId)
                 .orElseGet(() -> createCart(customerId));
 
-        ProductResponse product =
-                inventoryClient.getProduct(request.getProductId());
 
         CartItem item =
                 cartItemRepository
@@ -58,22 +57,19 @@ public class CartServiceImpl implements CartService {
                                 request.getProductId()
                         )
                         .orElse(null);
+        InventoryProductResponse<ProductResponse> response = inventoryClient.getProduct(request.getProductId());
+        ProductResponse product = response.getData();
+        if (product == null || product.getPrice() == null) {
 
+        }
         if (item == null) {
 
-            item = CartItem.builder()
+         item = CartItem.builder()
                     .cart(cart)
                     .productId(product.getId())
                     .quantity(request.getQuantity())
                     .unitPrice(product.getPrice())
-                    .totalPrice(
-                            product.getPrice()
-                                    .multiply(
-                                            BigDecimal.valueOf(
-                                                    request.getQuantity()
-                                            )
-                                    )
-                    )
+                    .totalPrice(product.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())))
                     .build();
 
             cart.addItem(item);
@@ -122,8 +118,12 @@ public class CartServiceImpl implements CartService {
                                         "Product not found in cart."
                                 ));
 
-        ProductResponse product =
-                inventoryClient.getProduct(productId);
+        InventoryProductResponse<ProductResponse> response = inventoryClient.getProduct(productId);
+        ProductResponse product = response.getData();
+
+        if (product == null || product.getPrice() == null) {
+
+        }
 
         item.setQuantity(request.getQuantity());
         item.setUnitPrice(product.getPrice());

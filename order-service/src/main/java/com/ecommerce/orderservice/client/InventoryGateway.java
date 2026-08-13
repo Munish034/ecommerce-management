@@ -40,7 +40,7 @@ public class InventoryGateway {
             fallbackMethod = "circuitBreakerGetProductFallback"
     )
     public InventoryProductResponse getProduct(Long productId) {
-        System.out.println("===== order feign  Hit fallback =====");
+        System.out.println("===== GET PRODUCT order feign  Hit fallback =====");
 
         return inventoryClient.getProduct(productId).getData();
     }

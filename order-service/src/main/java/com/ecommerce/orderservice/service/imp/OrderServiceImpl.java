@@ -128,7 +128,7 @@ transactionService.confirmOrder(savedOrder);
              return mapper.toResponse(savedOrder);
 
          } catch (Exception ex) {
-
+ex.printStackTrace();
              // PaymentFailedEvent will trigger Saga compensation.
              // Do not release stock here.
 
@@ -213,6 +213,7 @@ transactionService.confirmOrder(savedOrder);
                                 .orderNumber(order.getOrderNumber())
                                 .amount(order.getFinalAmount())
                                 .paymentMethod(order.getPaymentMethod())
+                                .customerId(order.getCustomerId())
                                 .build());
 
         if (paymentResponse.getData().getPaymentStatus()

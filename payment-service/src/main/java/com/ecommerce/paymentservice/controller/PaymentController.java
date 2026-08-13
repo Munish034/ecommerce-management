@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
 
     private final PaymentService paymentService;
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<PaymentResponse>> processPayment(
             @Valid @RequestBody CreatePaymentRequest request) {

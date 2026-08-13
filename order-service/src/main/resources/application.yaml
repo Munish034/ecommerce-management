@@ -97,3 +97,5 @@ logging:
 jwt:
   secret: 9B0E7D5A3C8F1A6E2B4D9C7A5F3E1B8D6C4A2F9E7B5D3A1C8E6F4B2D9A7C5E3F
   expiration: 86400000
+
+  refresh-expiration-days: 7

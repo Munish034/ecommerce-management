@@ -38,9 +38,9 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse processPayment(CreatePaymentRequest request) {
-
+        System.out.println("processPayment exceeded");
         if (request.getAmount().compareTo(BigDecimal.valueOf(100000)) > 0) {
-
+            System.out.println("limit exceeded");
             PaymentFailedEvent event = PaymentFailedEvent.builder()
                     .orderNumber(request.getOrderNumber())
 
@@ -56,7 +56,9 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         Payment payment = mapper.toEntity(request);
+        System.out.println("CustomerId========================="+request.getCustomerId());
         payment.setCustomerId(request.getCustomerId());
+
         payment.setPaymentId(
                 paymentIdGenerator.generatePaymentId());
 

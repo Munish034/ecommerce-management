@@ -6,7 +6,7 @@ spring:
     name: CART-SERVICE
 
   datasource:
-    url: jdbc:mysql://localhost:3306/ecommerce_cart?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/ecommerce_cart?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root
     password: nic@123
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -45,3 +45,7 @@ management:
   endpoint:
     health:
       show-details: always
+
+jwt:
+  secret: 9B0E7D5A3C8F1A6E2B4D9C7A5F3E1B8D6C4A2F9E7B5D3A1C8E6F4B2D9A7C5E3F
+  expiration: 86400000
