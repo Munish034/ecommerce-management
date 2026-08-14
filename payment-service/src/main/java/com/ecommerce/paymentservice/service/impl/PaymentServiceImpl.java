@@ -38,14 +38,35 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public PaymentResponse processPayment(CreatePaymentRequest request) {
-        System.out.println("processPayment exceeded");
-        if (request.getAmount().compareTo(BigDecimal.valueOf(100000)) > 0) {
-            System.out.println("limit exceeded");
-            PaymentFailedEvent event = PaymentFailedEvent.builder()
-                    .orderNumber(request.getOrderNumber())
 
-                    .reason("LIMIT_EXCEEDED")
-                    .build();
+        System.out.println("processPayment started");
+
+        /*
+         * Prevent duplicate payment for the same order.
+         */
+        if (repository.existsByOrderNumber(
+                request.getOrderNumber())) {
+
+            throw new BusinessException(
+                    "Payment already exists for Order : "
+                            + request.getOrderNumber(),
+                    ErrorCode.PAYMENT_ALREADY_EXISTS
+            );
+        }
+
+        /*
+         * Payment amount validation.
+         */
+        if (request.getAmount()
+                .compareTo(BigDecimal.valueOf(100000)) > 0) {
+
+            System.out.println("limit exceeded");
+
+            PaymentFailedEvent event =
+                    PaymentFailedEvent.builder()
+                            .orderNumber(request.getOrderNumber())
+                            .reason("LIMIT_EXCEEDED")
+                            .build();
 
             paymentEventProducer.publishPaymentFailedEvent(event);
 
@@ -55,29 +76,38 @@ public class PaymentServiceImpl implements PaymentService {
             );
         }
 
-        Payment payment = mapper.toEntity(request);
-        System.out.println("CustomerId========================="+request.getCustomerId());
-        payment.setCustomerId(request.getCustomerId());
+        Payment payment =
+                mapper.toEntity(request);
+
+        System.out.println(
+                "CustomerId========================="
+                        + request.getCustomerId()
+        );
+
+        payment.setCustomerId(
+                request.getCustomerId()
+        );
 
         payment.setPaymentId(
-                paymentIdGenerator.generatePaymentId());
+                paymentIdGenerator.generatePaymentId()
+        );
 
         payment.setTransactionId(
-                transactionIdGenerator.generateTransactionId());
+                transactionIdGenerator.generateTransactionId()
+        );
 
         /*
-         * Temporary Logic
-         *
-         * Later this will call Razorpay/Stripe
+         * Temporary payment implementation.
+         * Later replaced with Razorpay/Stripe.
          */
-
-        payment.setPaymentStatus(PaymentStatus.SUCCESS);
+        payment.setPaymentStatus(
+                PaymentStatus.SUCCESS
+        );
 
         Payment savedPayment =
                 repository.save(payment);
 
         return mapper.toResponse(savedPayment);
-
     }
 
     @Override

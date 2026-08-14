@@ -6,9 +6,9 @@ import com.ecommerce.cartservice.dto.request.CheckoutRequest;
 import com.ecommerce.cartservice.dto.request.CreateOrderRequest;
 import com.ecommerce.cartservice.dto.request.OrderItemRequest;
 import com.ecommerce.cartservice.dto.response.AddressResponse;
-import com.ecommerce.cartservice.dto.response.CartResponse;
+import com.ecommerce.cartservice.dto.response.CheckoutResponse;
+import com.ecommerce.cartservice.dto.response.OrderResponse;
 import com.ecommerce.cartservice.entity.Cart;
-import com.ecommerce.cartservice.mapper.CartMapper;
 import com.ecommerce.cartservice.repository.CartRepository;
 import com.ecommerce.cartservice.service.CheckoutService;
 import com.ecommerce.common.security.util.SecurityUtils;
@@ -27,18 +27,15 @@ public class CheckoutServiceImpl implements CheckoutService {
     private final CartRepository cartRepository;
     private final OrderClient orderClient;
     private final AddressClient addressClient;
-    private final CartMapper cartMapper;
 
     @Override
-    public CartResponse checkout(CheckoutRequest request) {
+    public CheckoutResponse checkout(
+            CheckoutRequest request) {
 
         Long customerId =
                 SecurityUtils.getCurrentUserId();
 
-        /*
-         * Validate that the shipping address exists
-         * and belongs to the authenticated customer.
-         */
+        // Validate address ownership
         AddressResponse address =
                 addressClient.getAddress(
                         request.getShippingAddressId()
@@ -80,27 +77,24 @@ public class CheckoutServiceImpl implements CheckoutService {
                         )
                         .build();
 
-        /*
-         * Existing Order Service remains responsible for:
-         *
-         * Inventory reservation
-         * Pricing
-         * Payment
-         * Order confirmation
-         * Saga / Outbox
-         */
-        orderClient.createOrder(orderRequest);
+        // Existing Order Service handles
+        // inventory, pricing, payment, Saga and Outbox.
+        OrderResponse order =
+                orderClient.createOrder(orderRequest);
 
-        /*
-         * Order was successfully accepted.
-         * Clear the cart.
-         */
+        // Clear cart only after successful order creation.
         cart.getItems().clear();
         cart.setTotalAmount(BigDecimal.ZERO);
 
-        Cart savedCart =
-                cartRepository.save(cart);
+        cartRepository.save(cart);
 
-        return cartMapper.toResponse(savedCart);
+        return CheckoutResponse.builder()
+                .orderId(order.getId())
+                .orderNumber(order.getOrderNumber())
+                .orderStatus(order.getOrderStatus())
+                .paymentStatus(order.getPaymentStatus())
+                .finalAmount(order.getFinalAmount())
+                .message("Checkout completed successfully.")
+                .build();
     }
 }

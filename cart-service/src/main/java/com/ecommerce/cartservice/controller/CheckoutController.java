@@ -1,7 +1,7 @@
 package com.ecommerce.cartservice.controller;
 
 import com.ecommerce.cartservice.dto.request.CheckoutRequest;
-import com.ecommerce.cartservice.dto.response.CartResponse;
+import com.ecommerce.cartservice.dto.response.CheckoutResponse;
 import com.ecommerce.cartservice.service.CheckoutService;
 import com.ecommerce.common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -17,10 +17,10 @@ public class CheckoutController {
     private final CheckoutService checkoutService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<CartResponse>> checkout(
+    public ResponseEntity<ApiResponse<CheckoutResponse>> checkout(
             @Valid @RequestBody CheckoutRequest request) {
 
-        CartResponse response =
+        CheckoutResponse response =
                 checkoutService.checkout(request);
 
         return ResponseEntity.ok(

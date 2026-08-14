@@ -5,35 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0498c0cd-9ffe-4755-a83b-1503d679c814" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/client/AddressClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/client/OrderClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/config/FeignJwtInterceptor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/controller/CheckoutController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/dto/request/CheckoutRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/dto/request/CreateOrderRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/dto/request/OrderItemRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/dto/response/AddressResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/dto/response/InventoryProductResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/dto/response/OrderResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/service/CheckoutService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/service/impl/CheckoutServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/dto/response/CheckoutResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/entity/OrderNumberSequence.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/repository/OrderNumberSequenceRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cart-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/cart-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/CartServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/CartServiceApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/client/InventoryClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/client/InventoryClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/service/impl/CartServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/service/impl/CartServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cart-service/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/cart-service/src/main/resources/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/client/InventoryGateway.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/client/InventoryGateway.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/controller/OrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/controller/OrderController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/dto/client/PaymentRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/dto/client/PaymentRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/service/imp/OrderServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/service/imp/OrderServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/order-service/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/resources/application.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/ecommerce/paymentservice/controller/PaymentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/ecommerce/paymentservice/controller/PaymentController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/ecommerce/paymentservice/mapper/PaymentMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/ecommerce/paymentservice/mapper/PaymentMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/ecommerce/paymentservice/repository/PaymentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/ecommerce/paymentservice/repository/PaymentRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/auth-service/src/main/resources/application.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/auth-service/src/main/resources/application.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/controller/CheckoutController.java" beforeDir="false" afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/controller/CheckoutController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/service/CheckoutService.java" beforeDir="false" afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/service/CheckoutService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/service/impl/CheckoutServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/cart-service/src/main/java/com/ecommerce/cartservice/service/impl/CheckoutServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/util/OrderNumberGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/order-service/src/main/java/com/ecommerce/orderservice/util/OrderNumberGenerator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/ecommerce/paymentservice/service/impl/PaymentServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/ecommerce/paymentservice/service/impl/PaymentServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/payment-service/src/main/java/com/ecommerce/paymentservice/util/PaymentIdGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/payment-service/src/main/java/com/ecommerce/paymentservice/util/PaymentIdGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -192,9 +173,9 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.CartServiceApplication" />
         <item itemvalue="Application.PaymentServiceApplication" />
         <item itemvalue="Application.InventoryServiceApplication" />
-        <item itemvalue="Application.CartServiceApplication" />
         <item itemvalue="Application.ApiGatewayApplication" />
         <item itemvalue="Application.NotificationServiceApplication" />
       </list>
