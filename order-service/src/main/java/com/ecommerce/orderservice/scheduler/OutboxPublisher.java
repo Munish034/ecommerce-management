@@ -23,10 +23,11 @@ public class OutboxPublisher {
 
     private final ObjectMapper objectMapper;
 
-    @Scheduled(fixedDelay = 50000000)
+    @Scheduled(fixedDelay = 5000000)
     public void publishEvents() {
 
-        List<OutboxEvent> events = repository.findTop100ByPublishedFalseOrderByCreatedAtAsc();
+        List<OutboxEvent> events =
+                repository.findTop100ByPublishedFalseOrderByCreatedAtAsc();
 
         for (OutboxEvent event : events) {
 
@@ -42,30 +43,39 @@ public class OutboxPublisher {
 
                 repository.save(event);
 
-                log.info("Outbox Event Published : {}", event.getEventType());
+                log.info(
+                        "Outbox Event Published : {}",
+                        event.getEventType()
+                );
 
             } catch (Exception ex) {
 
-                log.error("Failed to publish Outbox Event : {}", event.getId(), ex);
-
+                log.error(
+                        "Failed to publish Outbox Event : {}",
+                        event.getId(),
+                        ex
+                );
             }
-
         }
-
     }
 
     private String getTopic(String eventType) {
 
         return switch (eventType) {
 
-            case "ORDER_CREATED" -> "order-created-topic";
+            case "ORDER_CREATED" ->
+                    "order-created-topic";
 
-            case "ORDER_CANCELLED" -> "order-cancelled-topic";
+            case "ORDER_CANCELLED" ->
+                    "order-cancelled-topic";
+
+            case "ORDER_STATUS_CHANGED" ->
+                    "order-status-changed-topic";
 
             default -> throw new IllegalArgumentException(
-                    "Unknown Event Type : " + eventType);
+                    "Unknown Event Type : " + eventType
+            );
         };
-
     }
 
 }

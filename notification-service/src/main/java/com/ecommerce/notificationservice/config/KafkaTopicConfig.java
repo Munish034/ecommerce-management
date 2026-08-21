@@ -10,21 +10,55 @@ public class KafkaTopicConfig {
 
     @Bean
     public NewTopic orderCreatedTopic() {
-        return new NewTopic(KafkaTopics.ORDER_CREATED, 1, (short) 1);
+        return new NewTopic(
+                KafkaTopics.ORDER_CREATED,
+                1,
+                (short) 1
+        );
     }
 
     @Bean
     public NewTopic orderCancelledTopic() {
-        return new NewTopic(KafkaTopics.ORDER_CANCELLED, 1, (short) 1);
+        return new NewTopic(
+                KafkaTopics.ORDER_CANCELLED,
+                1,
+                (short) 1
+        );
     }
 
     @Bean
     public NewTopic orderCreatedDLT() {
-        return new NewTopic(KafkaTopics.ORDER_CREATED_DLT, 1, (short) 1);
+        return new NewTopic(
+                KafkaTopics.ORDER_CREATED_DLT,
+                1,
+                (short) 1
+        );
     }
 
     @Bean
     public NewTopic orderCancelledDLT() {
-        return new NewTopic(KafkaTopics.ORDER_CANCELLED_DLT, 1, (short) 1);
+        return new NewTopic(
+                KafkaTopics.ORDER_CANCELLED_DLT,
+                1,
+                (short) 1
+        );
+    }
+
+    @Bean
+    public NewTopic orderStatusChangedTopic() {
+        return new NewTopic(
+                KafkaTopics.ORDER_STATUS_CHANGED,
+                1,
+                (short) 1
+        );
+    }
+
+    @Bean
+    public NewTopic orderStatusChangedDLT() {
+        return new NewTopic(
+                KafkaTopics.ORDER_STATUS_CHANGED_DLT,
+                1,
+                (short) 1
+        );
     }
 }

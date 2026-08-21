@@ -4,6 +4,7 @@ package com.ecommerce.orderservice.controller;
 import com.ecommerce.common.response.ApiResponse;
 import com.ecommerce.orderservice.dto.request.CreateOrderRequest;
 import com.ecommerce.orderservice.dto.request.OrderSearchRequest;
+import com.ecommerce.orderservice.dto.request.UpdateOrderStatusRequest;
 import com.ecommerce.orderservice.dto.response.OrderResponse;
 import com.ecommerce.orderservice.service.OrderService;
 import jakarta.validation.Valid;
@@ -27,6 +28,7 @@ public String test(){
 
     return "test";
 }
+
     @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
@@ -67,7 +69,7 @@ public String test(){
                         null
                 ));
     }
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(
             @PathVariable Long id) {
@@ -80,7 +82,23 @@ public String test(){
                         response
                 ));
     }
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateOrderStatusRequest request) {
+
+        OrderResponse response =
+                orderService.updateOrderStatus(id, request);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Order status updated successfully.",
+                        response
+                )
+        );
+    }
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN')")
     @GetMapping
     public ResponseEntity<ApiResponse<Page<OrderResponse>>> searchOrders(
 

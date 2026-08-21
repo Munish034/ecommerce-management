@@ -4,6 +4,7 @@ import com.ecommerce.common.enums.CancellationReason;
 import com.ecommerce.common.enums.ErrorCode;
 import com.ecommerce.common.events.OrderCancelledEvent;
 import com.ecommerce.common.events.OrderCreatedEvent;
+import com.ecommerce.common.events.OrderStatusChangedEvent;
 import com.ecommerce.common.exception.BusinessException;
 import com.ecommerce.common.exception.ResourceNotFoundException;
 import com.ecommerce.common.response.ApiResponse;
@@ -16,6 +17,7 @@ import com.ecommerce.orderservice.dto.client.ReleaseStockRequest;
 import com.ecommerce.orderservice.dto.client.ReserveStockRequest;
 import com.ecommerce.orderservice.dto.request.CreateOrderRequest;
 import com.ecommerce.orderservice.dto.request.OrderSearchRequest;
+import com.ecommerce.orderservice.dto.request.UpdateOrderStatusRequest;
 import com.ecommerce.orderservice.dto.response.InventoryProductResponse;
 import com.ecommerce.orderservice.dto.response.OrderResponse;
 import com.ecommerce.orderservice.entity.Order;
@@ -33,8 +35,9 @@ import com.ecommerce.orderservice.specification.OrderSpecification;
 import com.ecommerce.orderservice.util.OrderNumberGenerator;
 import com.ecommerce.orderservice.client.InventoryClient;
 import com.ecommerce.orderservice.enums.PaymentStatus;
+import org.springframework.transaction.annotation.Transactional;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -80,7 +83,9 @@ public class OrderServiceImpl implements OrderService {
             "orderNumber",
             "orderStatus",
             "paymentStatus",
-            "finalAmount"
+            "totalAmount",
+            "finalAmount",
+            "createdAt"
     );
 
      /////create order /////
@@ -101,14 +106,15 @@ public class OrderServiceImpl implements OrderService {
              reserveInventory(savedOrder, reservedItems);
 
              pricingService.calculatePrice(savedOrder);
-             // Update status after successful payment
+
+             processPayment(savedOrder);
+
              savedOrder.setOrderStatus(OrderStatus.CONFIRMED);
              savedOrder.setPaymentStatus(PaymentStatus.PAID);
 
              savedOrder = repository.save(savedOrder);
-             processPayment(savedOrder);
 
-transactionService.confirmOrder(savedOrder);
+             transactionService.confirmOrder(savedOrder);
 
              OrderCreatedEvent event = OrderCreatedEvent.builder()
                      .orderId(savedOrder.getId())
@@ -128,28 +134,78 @@ transactionService.confirmOrder(savedOrder);
              return mapper.toResponse(savedOrder);
 
          } catch (Exception ex) {
-ex.printStackTrace();
-             // PaymentFailedEvent will trigger Saga compensation.
-             // Do not release stock here.
+
+             log.error(
+                     "Order processing failed for order [{}]. Waiting for Saga compensation if payment failed.",
+                     savedOrder.getOrderNumber(),
+                     ex
+             );
 
              throw ex;
          }
      }
     @Override
+    @Transactional
     public void cancelOrderByOrderNumber(String orderNumber) {
 
         Order order = repository.findByOrderNumber(orderNumber)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Order not found : " + orderNumber,
-                                ErrorCode.ORDER_NOT_FOUND));
+                .orElse(null);
 
-        cancelOrder(
-                order.getId(),
-                CancellationReason.PAYMENT_FAILED.name()
+        if (order == null) {
+            log.warn(
+                    "Order [{}] not found. Ignoring stale PaymentFailedEvent.",
+                    orderNumber
+            );
+            return;
+        }
+
+        // Kafka events can be delivered more than once.
+        if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+
+            log.info(
+                    "Order [{}] is already cancelled. Skipping duplicate PaymentFailedEvent.",
+                    orderNumber
+            );
+
+            return;
+        }
+
+        log.info(
+                "Cancelling order [{}] because payment failed.",
+                orderNumber
+        );
+
+        // Release reserved inventory
+        releaseOrderInventory(order);
+
+        // Update order status
+        order.setOrderStatus(OrderStatus.CANCELLED);
+
+        // Payment failed
+        order.setPaymentStatus(PaymentStatus.FAILED);
+
+        Order updatedOrder = repository.save(order);
+
+        OrderCancelledEvent event =
+                OrderCancelledEvent.builder()
+                        .orderId(updatedOrder.getId())
+                        .orderNumber(updatedOrder.getOrderNumber())
+                        .reason(CancellationReason.PAYMENT_FAILED.name())
+                        .eventTime(LocalDateTime.now())
+                        .build();
+
+        outboxService.saveEvent(
+                "ORDER",
+                updatedOrder.getId(),
+                "ORDER_CANCELLED",
+                event
+        );
+
+        log.info(
+                "Order [{}] cancelled successfully after payment failure.",
+                orderNumber
         );
     }
-
 
     private Order buildOrder(CreateOrderRequest request) {
 
@@ -231,21 +287,21 @@ ex.printStackTrace();
 
         for (ReleaseStockRequest request : reservedItems) {
 
-            try {
+            log.info(
+                    "Releasing inventory. Product ID: {}, Quantity: {}",
+                    request.getProductId(),
+                    request.getQuantity()
+            );
 
-                inventoryClient.releaseStock(request);
+            inventoryClient.releaseStock(request);
 
-            } catch (Exception ex) {
-
-                // We'll replace this with logging later
-                System.err.println(
-                        "Failed to release stock for Product Id: "
-                                + request.getProductId());
-            }
+            log.info(
+                    "Inventory released successfully. Product ID: {}, Quantity: {}",
+                    request.getProductId(),
+                    request.getQuantity()
+            );
         }
     }
-
-
 
     ///cancel order////
     @Override
@@ -323,6 +379,11 @@ ex.printStackTrace();
     }
     private void releaseOrderInventory(Order order) {
 
+        log.info(
+                "Starting inventory release for order [{}]",
+                order.getOrderNumber()
+        );
+
         List<ReleaseStockRequest> requests =
                 order.getOrderItems()
                         .stream()
@@ -332,17 +393,39 @@ ex.printStackTrace();
                                 .build())
                         .toList();
 
+        if (requests.isEmpty()) {
+            log.warn(
+                    "No order items found for order [{}]. Inventory cannot be released.",
+                    order.getOrderNumber()
+            );
+            return;
+        }
+
         releaseReservedStock(requests);
+
+        log.info(
+                "Inventory release completed for order [{}]",
+                order.getOrderNumber()
+        );
     }
     @Override
     @Transactional
     public void deleteOrder(Long orderId) {
 
         Order order = getOrder(orderId);
-        validateOrderOwnership(order);
-        validateOrderDeletion(order);
 
-        repository.delete(order);
+        validateOrderOwnership(order);
+
+        if (order.getOrderStatus() != OrderStatus.CANCELLED) {
+            throw new BusinessException(
+                    "Only cancelled orders can be deleted.",
+                    ErrorCode.INVALID_ORDER_STATUS
+            );
+        }
+
+
+
+        repository.save(order);
     }
     private void validateOrderDeletion(Order order) {
 
@@ -363,7 +446,7 @@ ex.printStackTrace();
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<OrderResponse> searchOrders(
             OrderSearchRequest request,
             int page,
@@ -373,10 +456,28 @@ ex.printStackTrace();
 
         Sort sort = buildSort(sortBy, direction);
 
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable =
+                PageRequest.of(page, size, sort);
 
         Specification<Order> specification =
                 OrderSpecification.search(request);
+
+        boolean isAdmin =
+                SecurityUtils.hasRole("ADMIN");
+
+        if (!isAdmin) {
+
+            Long currentUserId =
+                    SecurityUtils.getCurrentUserId();
+
+            specification = specification.and(
+                    (root, query, criteriaBuilder) ->
+                            criteriaBuilder.equal(
+                                    root.get("customerId"),
+                                    currentUserId
+                            )
+            );
+        }
 
         Page<Order> orderPage =
                 repository.findAll(specification, pageable);
@@ -403,13 +504,106 @@ ex.printStackTrace();
                     ErrorCode.INVALID_REQUEST);
         }
     }
+    @Override
+    @Transactional
+    public OrderResponse updateOrderStatus(
+            Long orderId,
+            UpdateOrderStatusRequest request) {
+
+        Order order = getOrder(orderId);
+
+        OrderStatus previousStatus =
+                order.getOrderStatus();
+
+        OrderStatus newStatus =
+                request.getOrderStatus();
+
+        validateOrderStatusTransition(
+                previousStatus,
+                newStatus
+        );
+
+        order.setOrderStatus(newStatus);
+
+        Order updatedOrder =
+                repository.save(order);
+
+        OrderStatusChangedEvent event =
+                OrderStatusChangedEvent.builder()
+                        .orderId(updatedOrder.getId())
+                        .orderNumber(updatedOrder.getOrderNumber())
+                        .previousStatus(previousStatus.name())
+                        .newStatus(newStatus.name())
+                        .eventTime(LocalDateTime.now())
+                        .build();
+
+        outboxService.saveEvent(
+                "ORDER",
+                updatedOrder.getId(),
+                "ORDER_STATUS_CHANGED",
+                event
+        );
+
+        return mapper.toResponse(updatedOrder);
+    }
+    private void validateOrderStatusTransition(
+            OrderStatus currentStatus,
+            OrderStatus newStatus) {
+
+        if (currentStatus == newStatus) {
+            throw new BusinessException(
+                    "Order is already in " + newStatus + " status.",
+                    ErrorCode.INVALID_ORDER_STATUS
+            );
+        }
+
+        boolean validTransition =
+                switch (currentStatus) {
+
+                    case CREATED ->
+                            newStatus == OrderStatus.CONFIRMED
+                                    || newStatus == OrderStatus.CANCELLED;
+
+                    case CONFIRMED ->
+                            newStatus == OrderStatus.PROCESSING
+                                    || newStatus == OrderStatus.CANCELLED;
+
+                    case PROCESSING ->
+                            newStatus == OrderStatus.SHIPPED
+                                    || newStatus == OrderStatus.CANCELLED;
+
+                    case SHIPPED ->
+                            newStatus == OrderStatus.DELIVERED;
+
+                    case DELIVERED, CANCELLED ->
+                            false;
+
+                    default ->
+                            false;
+                };
+
+        if (!validTransition) {
+            throw new BusinessException(
+                    "Invalid order status transition from "
+                            + currentStatus
+                            + " to "
+                            + newStatus,
+                    ErrorCode.INVALID_ORDER_STATUS
+            );
+        }
+    }
     private void validateOrderOwnership(Order order) {
 
-        Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (SecurityUtils.hasRole("ADMIN")) {
+            return;
+        }
+
+        Long currentUserId =
+                SecurityUtils.getCurrentUserId();
 
         if (!order.getCustomerId().equals(currentUserId)) {
             throw new AccessDeniedException(
-                    "You are not authorized to access this order."
+                    "You are not authorized to cancel this order."
             );
         }
     }

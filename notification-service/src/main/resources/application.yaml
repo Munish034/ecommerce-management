@@ -5,6 +5,19 @@ spring:
   application:
     name: NOTIFICATION-SERVICE
 
+  datasource:
+    url: jdbc:mysql://localhost:3306/ecommerce-notification?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Kolkata
+    username: root
+    password: nic@123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -16,7 +29,7 @@ spring:
       group-id: notification-group
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 
       properties:
         spring.json.trusted.packages: "*"

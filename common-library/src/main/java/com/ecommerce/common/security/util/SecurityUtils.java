@@ -25,7 +25,23 @@ public final class SecurityUtils {
 
         return (JwtUser) authentication.getPrincipal();
     }
+    public static boolean hasRole(String role) {
 
+        Authentication authentication =
+                SecurityContextHolder.getContext()
+                        .getAuthentication();
+
+        if (authentication == null) {
+            return false;
+        }
+
+        return authentication.getAuthorities()
+                .stream()
+                .anyMatch(authority ->
+                        authority.getAuthority()
+                                .equals("ROLE_" + role)
+                );
+    }
     public static Long getCurrentUserId() {
 
         Authentication authentication =

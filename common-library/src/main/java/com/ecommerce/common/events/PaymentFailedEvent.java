@@ -2,6 +2,8 @@ package com.ecommerce.common.events;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,4 +18,5 @@ public class PaymentFailedEvent {
     private Integer quantity;
 
     private String reason;
+    private LocalDateTime eventTime;
 }
